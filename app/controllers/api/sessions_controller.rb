@@ -1,36 +1,41 @@
 class Api::SessionsController < ApplicationController
   def show
     if current_user
-      render json: { user: current_user }
+      @user = current_user
+      render "api/users/show"
     else
-      render json: { user: nil }
+      render :inter
     end
   end
 
   def create
-    username = params[:credential]
-    password = params[:password]
+    credential = params.require(:credential)
+    password = params.require(:password)
 
-    @user = User.find_by_credentials(username, password)
+    # debugger
+    @user = User.find_by_credentials(credential, password)
 
     if @user
       login!(@user)
-      render json: { user: @user }
+      render "api/users/show"
     else
-      render json: {
-               errors: ["The provided credentials were invalid."]
-             },
-             status: :unauthorized
+      render json: { error: "Invalid credentials" }, status: :unauthorized
     end
   end
 
   def destroy
-    # debugger
     if current_user
       logout!
-      render json: { message: "success" }
+      render json: { message: "success!" }
+    else
+      render json: { message: "failure!" }
     end
   end
 
   private
+
+  # def user_params
+  #   debugger
+  #   # params.require(:user).permit(:credential, :password)
+  # end
 end
